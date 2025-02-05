@@ -10,7 +10,7 @@ import retrofit2.http.Query
 interface MoviesApiService {
     companion object {
         const val BASE_URL = "https://api.themoviedb.org/3/"
-        const val API_KEY = "035ad57df0ad268a9b46e6b64d88f5f5"
+        const val API_KEY = "YOUR_API_KEY"
         const val IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500"
     }
 
