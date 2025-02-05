@@ -5,15 +5,18 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moviesapp.data.model.Movie
-import com.example.moviesapp.data.model.MovieDetails
-import com.example.moviesapp.data.repository.MovieRepository
+import com.example.moviesapp.domain.usecase.GetPopularMoviesUseCase
+import com.example.moviesapp.domain.usecase.GetNowPlayingMoviesUseCase
+import com.example.moviesapp.domain.usecase.GetUpcomingMoviesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: MovieRepository
+    private val getPopularMoviesUseCase: GetPopularMoviesUseCase,
+    private val getNowPlayingMoviesUseCase: GetNowPlayingMoviesUseCase,
+    private val getUpcomingMoviesUseCase: GetUpcomingMoviesUseCase
 ) : ViewModel() {
 
     private val _popularMovies = MutableLiveData<List<Movie>>()
@@ -33,71 +36,41 @@ class HomeViewModel @Inject constructor(
     private val upcomingMoviesCache = mutableMapOf<Int, List<Movie>>()
 
     fun fetchPopularMovies(page: Int) {
-        if (popularMoviesCache.containsKey(page)) {
-            _popularMovies.value = popularMoviesCache[page]
-            return
-        }
-
         viewModelScope.launch {
-            try {
-                val response = repository.getPopularMovies(page)
-                if (response.isSuccessful) {
-                    response.body()?.movies?.let { movies ->
-                        popularMoviesCache[page] = movies
-                        _popularMovies.value = movies
-                    }
-                } else {
-                    _error.value = "Error fetching popular movies"
+            getPopularMoviesUseCase(page)
+                .onSuccess { movies ->
+                    popularMoviesCache[page] = movies
+                    _popularMovies.value = movies
                 }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error occurred"
-            }
+                .onFailure { exception ->
+                    _error.value = exception.message
+                }
         }
     }
 
     fun fetchNowPlayingMovies(page: Int) {
-        if (nowPlayingMoviesCache.containsKey(page)) {
-            _nowPlayingMovies.value = nowPlayingMoviesCache[page]
-            return
-        }
-
         viewModelScope.launch {
-            try {
-                val response = repository.getNowPlayingMovies(page)
-                if (response.isSuccessful) {
-                    response.body()?.movies?.let { movies ->
-                        nowPlayingMoviesCache[page] = movies
-                        _nowPlayingMovies.value = movies
-                    }
-                } else {
-                    _error.value = "Error fetching now playing movies"
+            getNowPlayingMoviesUseCase(page)
+                .onSuccess { movies ->
+                    nowPlayingMoviesCache[page] = movies
+                    _nowPlayingMovies.value = movies
                 }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error occurred"
-            }
+                .onFailure { exception ->
+                    _error.value = exception.message
+                }
         }
     }
 
     fun fetchUpcomingMovies(page: Int) {
-        if (upcomingMoviesCache.containsKey(page)) {
-            _upcomingMovies.value = upcomingMoviesCache[page]
-            return
-        }
-
         viewModelScope.launch {
-            try {
-                val response = repository.getUpcomingMovies(page)
-                if (response.isSuccessful) {
-                    response.body()?.movies?.let { movies ->
-                        upcomingMoviesCache[page] = movies
-                        _upcomingMovies.value = movies
-                    }
-                } else {
-                    _error.value = "Error fetching upcoming movies"
+            getUpcomingMoviesUseCase(page)
+                .onSuccess { movies ->
+                    upcomingMoviesCache[page] = movies
+                    _upcomingMovies.value = movies
                 }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error occurred"
-            }
+                .onFailure { exception ->
+                    _error.value = exception.message
+                }
         }
     }
 }

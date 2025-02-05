@@ -5,14 +5,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moviesapp.data.model.MovieDetails
-import com.example.moviesapp.data.repository.MovieRepository
+import com.example.moviesapp.domain.usecase.GetMovieDetailsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MovieDetailViewModel @Inject constructor(
-    private val repository: MovieRepository
+    private val getMovieDetailsUseCase: GetMovieDetailsUseCase
 ) : ViewModel() {
 
     private val _movieDetails = MutableLiveData<MovieDetails>()
@@ -26,19 +26,16 @@ class MovieDetailViewModel @Inject constructor(
 
     fun fetchMovieDetails(movieId: Int) {
         viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                val response = repository.getMovieDetails(movieId)
-                if (response.isSuccessful) {
-                    _movieDetails.value = response.body()
-                } else {
-                    _error.value = "Error fetching movie details"
+            _isLoading.value = true
+            getMovieDetailsUseCase(movieId)
+                .onSuccess { details ->
+                    _movieDetails.value = details
+                    _error.value = null
                 }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error occurred"
-            } finally {
-                _isLoading.value = false
-            }
+                .onFailure { exception ->
+                    _error.value = exception.message
+                }
+            _isLoading.value = false
         }
     }
 } 

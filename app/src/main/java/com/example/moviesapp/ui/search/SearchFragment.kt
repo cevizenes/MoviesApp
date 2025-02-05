@@ -82,7 +82,7 @@ class SearchFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 searchJob?.cancel()
                 searchJob = CoroutineScope(Dispatchers.Main).launch {
-                    delay(500) // Debounce timeouts
+                    delay(500)
                     s?.toString()?.let { query ->
                         searchPage = 1
                         performSearch(query)
@@ -109,11 +109,9 @@ class SearchFragment : Fragment() {
         viewModel.searchResults.observe(viewLifecycleOwner) { movies ->
             movies?.let {
                 if (it.isEmpty()) {
-                    if (searchPage == 1) {
-                        binding.noResultsLayout.visibility = View.VISIBLE
-                        binding.searchRecyclerView.visibility = View.GONE
-                        searchMoviesAdapter.submitList(emptyList())
-                    }
+                    binding.noResultsLayout.visibility = View.VISIBLE
+                    binding.searchRecyclerView.visibility = View.GONE
+                    searchMoviesAdapter.submitList(emptyList())
                 } else {
                     binding.noResultsLayout.visibility = View.GONE
                     binding.searchRecyclerView.visibility = View.VISIBLE
@@ -128,6 +126,10 @@ class SearchFragment : Fragment() {
                 }
                 isLoadingSearch = false
             }
+        }
+
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         viewModel.error.observe(viewLifecycleOwner) { error ->

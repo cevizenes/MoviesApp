@@ -173,7 +173,6 @@ class HomeFragment : Fragment() {
         viewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
                 Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                println("Error: $it")
                 isLoadingPopular = false
                 isLoadingCategory = false
             }
