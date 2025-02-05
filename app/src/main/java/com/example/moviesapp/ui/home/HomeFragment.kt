@@ -1,5 +1,8 @@
 package com.example.moviesapp.ui.home
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +11,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.moviesapp.R
@@ -20,17 +24,25 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    
+
     private val viewModel: HomeViewModel by viewModels()
     private var popularPage = 1
     private var categoryPage = 1
     private var isLoadingPopular = false
     private var isLoadingCategory = false
+    private var isFirstLoad = true
 
     private val popularMoviesAdapter by lazy {
         MoviesAdapter(
             onMovieClick = { movie ->
-                viewModel.fetchMovieDetails(movie.id)
+                try {
+                    val action =
+                        HomeFragmentDirections.actionNavigationHomeToMovieDetailFragment(movie.id)
+                    findNavController().navigate(action)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Navigation error: ${e.message}", Toast.LENGTH_SHORT)
+                        .show()
+                }
             },
             onLastItemReached = {
                 if (!isLoadingPopular) {
@@ -45,7 +57,14 @@ class HomeFragment : Fragment() {
     private val categoryMoviesAdapter by lazy {
         MoviesAdapter(
             onMovieClick = { movie ->
-                viewModel.fetchMovieDetails(movie.id)
+                try {
+                    val action =
+                        HomeFragmentDirections.actionNavigationHomeToMovieDetailFragment(movie.id)
+                    findNavController().navigate(action)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Navigation error: ${e.message}", Toast.LENGTH_SHORT)
+                        .show()
+                }
             },
             onLastItemReached = {
                 if (!isLoadingCategory) {
@@ -82,7 +101,11 @@ class HomeFragment : Fragment() {
         setupObservers()
         setupClickListeners()
         updateCategoryButtonsUI()
-        loadInitialData()
+
+        if (isFirstLoad) {
+            loadInitialData()
+            isFirstLoad = false
+        }
     }
 
     private fun setupRecyclerViews() {
@@ -100,9 +123,15 @@ class HomeFragment : Fragment() {
     private fun setupObservers() {
         viewModel.popularMovies.observe(viewLifecycleOwner) { movies ->
             movies?.let {
-                val currentList = popularMoviesAdapter.currentList.toMutableList()
-                currentList.addAll(it)
-                popularMoviesAdapter.submitList(currentList)
+                if (popularPage == 1) {
+                    popularMoviesAdapter.submitList(it)
+                } else {
+                    val currentList = popularMoviesAdapter.currentList.toMutableList()
+                    if (!currentList.containsAll(it)) {
+                        currentList.addAll(it)
+                        popularMoviesAdapter.submitList(currentList)
+                    }
+                }
                 isLoadingPopular = false
             }
         }
@@ -110,9 +139,15 @@ class HomeFragment : Fragment() {
         viewModel.nowPlayingMovies.observe(viewLifecycleOwner) { movies ->
             if (currentCategory == Category.NOW_PLAYING) {
                 movies?.let {
-                    val currentList = categoryMoviesAdapter.currentList.toMutableList()
-                    currentList.addAll(it)
-                    categoryMoviesAdapter.submitList(currentList)
+                    if (categoryPage == 1) {
+                        categoryMoviesAdapter.submitList(it)
+                    } else {
+                        val currentList = categoryMoviesAdapter.currentList.toMutableList()
+                        if (!currentList.containsAll(it)) {
+                            currentList.addAll(it)
+                            categoryMoviesAdapter.submitList(currentList)
+                        }
+                    }
                 }
             }
             isLoadingCategory = false
@@ -121,9 +156,15 @@ class HomeFragment : Fragment() {
         viewModel.upcomingMovies.observe(viewLifecycleOwner) { movies ->
             if (currentCategory == Category.UPCOMING) {
                 movies?.let {
-                    val currentList = categoryMoviesAdapter.currentList.toMutableList()
-                    currentList.addAll(it)
-                    categoryMoviesAdapter.submitList(currentList)
+                    if (categoryPage == 1) {
+                        categoryMoviesAdapter.submitList(it)
+                    } else {
+                        val currentList = categoryMoviesAdapter.currentList.toMutableList()
+                        if (!currentList.containsAll(it)) {
+                            currentList.addAll(it)
+                            categoryMoviesAdapter.submitList(currentList)
+                        }
+                    }
                 }
             }
             isLoadingCategory = false
@@ -132,6 +173,7 @@ class HomeFragment : Fragment() {
         viewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
                 Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                println("Error: $it")
                 isLoadingPopular = false
                 isLoadingCategory = false
             }
@@ -180,6 +222,7 @@ class HomeFragment : Fragment() {
         loadPopularMovies()
         loadNowPlayingMovies()
     }
+
 
     private fun loadPopularMovies() {
         if (!isLoadingPopular) {

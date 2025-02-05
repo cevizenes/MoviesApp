@@ -10,6 +10,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.moviesapp.databinding.FragmentSearchBinding
 import com.example.moviesapp.ui.adapter.MoviesAdapter
@@ -34,7 +35,9 @@ class SearchFragment : Fragment() {
     private val searchMoviesAdapter by lazy {
         MoviesAdapter(
             onMovieClick = { movie ->
-                viewModel.fetchMovieDetails(movie.id)
+                findNavController().navigate(
+                    SearchFragmentDirections.actionNavigationSearchToMovieDetailFragment(movie.id)
+                )
             },
             onLastItemReached = {
                 if (!isLoadingSearch) {

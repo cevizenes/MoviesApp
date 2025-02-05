@@ -25,110 +25,79 @@ class HomeViewModel @Inject constructor(
     private val _upcomingMovies = MutableLiveData<List<Movie>>()
     val upcomingMovies: LiveData<List<Movie>> = _upcomingMovies
 
-    private val _movieDetails = MutableLiveData<MovieDetails>()
-    val movieDetails: LiveData<MovieDetails> = _movieDetails
-
-    private val _searchResults = MutableLiveData<List<Movie>>()
-    val searchResults: LiveData<List<Movie>> = _searchResults
-
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
-
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
-    fun fetchPopularMovies(page: Int = 1) {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                val response = repository.getPopularMovies(page)
-                if (response.isSuccessful) {
-                    _popularMovies.value = response.body()?.movies
-                } else {
-                    _error.value = "Error fetching popular movies"
-                }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error occurred"
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
+    private val popularMoviesCache = mutableMapOf<Int, List<Movie>>()
+    private val nowPlayingMoviesCache = mutableMapOf<Int, List<Movie>>()
+    private val upcomingMoviesCache = mutableMapOf<Int, List<Movie>>()
 
-    fun fetchNowPlayingMovies(page: Int = 1) {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                val response = repository.getNowPlayingMovies(page)
-                if (response.isSuccessful) {
-                    _nowPlayingMovies.value = response.body()?.movies
-                } else {
-                    _error.value = "Error fetching now playing movies"
-                }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error occurred"
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
-    fun fetchUpcomingMovies(page: Int = 1) {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                val response = repository.getUpcomingMovies(page)
-                if (response.isSuccessful) {
-                    _upcomingMovies.value = response.body()?.movies
-                } else {
-                    _error.value = "Error fetching upcoming movies"
-                }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error occurred"
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
-    fun fetchMovieDetails(movieId: Int) {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                val response = repository.getMovieDetails(movieId)
-                if (response.isSuccessful) {
-                    _movieDetails.value = response.body()
-                } else {
-                    _error.value = "Error fetching movie details"
-                }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error occurred"
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
-    fun searchMovies(query: String, page: Int = 1) {
-        if (query.isBlank()) {
-            _searchResults.value = emptyList()
+    fun fetchPopularMovies(page: Int) {
+        if (popularMoviesCache.containsKey(page)) {
+            _popularMovies.value = popularMoviesCache[page]
             return
         }
 
         viewModelScope.launch {
             try {
-                _isLoading.value = true
-                val response = repository.searchMovies(query, page)
+                val response = repository.getPopularMovies(page)
                 if (response.isSuccessful) {
-                    _searchResults.value = response.body()?.movies
+                    response.body()?.movies?.let { movies ->
+                        popularMoviesCache[page] = movies
+                        _popularMovies.value = movies
+                    }
                 } else {
-                    _error.value = "Error searching movies"
+                    _error.value = "Error fetching popular movies"
                 }
             } catch (e: Exception) {
                 _error.value = e.message ?: "Unknown error occurred"
-            } finally {
-                _isLoading.value = false
             }
         }
     }
-} 
+
+    fun fetchNowPlayingMovies(page: Int) {
+        if (nowPlayingMoviesCache.containsKey(page)) {
+            _nowPlayingMovies.value = nowPlayingMoviesCache[page]
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val response = repository.getNowPlayingMovies(page)
+                if (response.isSuccessful) {
+                    response.body()?.movies?.let { movies ->
+                        nowPlayingMoviesCache[page] = movies
+                        _nowPlayingMovies.value = movies
+                    }
+                } else {
+                    _error.value = "Error fetching now playing movies"
+                }
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Unknown error occurred"
+            }
+        }
+    }
+
+    fun fetchUpcomingMovies(page: Int) {
+        if (upcomingMoviesCache.containsKey(page)) {
+            _upcomingMovies.value = upcomingMoviesCache[page]
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val response = repository.getUpcomingMovies(page)
+                if (response.isSuccessful) {
+                    response.body()?.movies?.let { movies ->
+                        upcomingMoviesCache[page] = movies
+                        _upcomingMovies.value = movies
+                    }
+                } else {
+                    _error.value = "Error fetching upcoming movies"
+                }
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Unknown error occurred"
+            }
+        }
+    }
+}

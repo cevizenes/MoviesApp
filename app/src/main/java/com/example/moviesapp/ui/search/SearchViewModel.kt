@@ -58,14 +58,4 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
-
-    fun fetchMovieDetails(movieId: Int) {
-        viewModelScope.launch {
-            try {
-                repository.getMovieDetails(movieId)
-            } catch (e: Exception) {
-                _error.value = e.message
-            }
-        }
-    }
-} 
+}
