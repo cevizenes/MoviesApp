@@ -1,6 +1,8 @@
 package com.example.moviesapp.di
 
 import com.example.moviesapp.data.api.MoviesApiService
+import com.example.moviesapp.data.repository.MovieRepositoryImpl
+import com.example.moviesapp.domain.repository.MovieRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,5 +48,11 @@ object NetworkModule {
     @Singleton
     fun provideMoviesApiService(retrofit: Retrofit): MoviesApiService {
         return retrofit.create(MoviesApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMovieRepository(api: MoviesApiService): MovieRepository {
+        return MovieRepositoryImpl(api)
     }
 } 
