@@ -3,13 +3,22 @@
 A modern Android application that helps users discover movies using TMDB API. Users can browse popular movies, search for specific titles, and view detailed information about each movie.
 
 ## Screenshots 📱
-<p float="left">
-  <img src="screenshots/home_screen.png" width="200" />
-  <img src="screenshots/search_screen.png" width="200" />
-  <img src="screenshots/search_yes_result.png.png" width="200" />
-  <img src="screenshots/search_no_result.png" width="200" />
-  <img src="screenshots/detail_screen.png" width="200" />
-</p>
+<table>
+  <tr>
+    <td align="center"><strong>Home Screen</strong></td>
+    <td align="center"><strong>Search Screen</strong></td>
+    <td align="center"><strong>Search Results</strong></td>
+    <td align="center"><strong>No Results Found</strong></td>
+    <td align="center"><strong>Details Screen</strong></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/home_screen.png" width="200"/></td>
+    <td><img src="screenshots/search_screen.png" width="200"/></td>
+    <td><img src="screenshots/search_yes_result.png" width="200"/></td>
+    <td><img src="screenshots/search_no_result.png" width="200"/></td>
+    <td><img src="screenshots/detail_screen.png" width="200"/></td>
+  </tr>
+</table>
 
 - Home Screen: Shows popular, now playing, and upcoming movies
 - Search Screen: Allows users to search for movies
