@@ -106,11 +106,4 @@ const val API_KEY = "YOUR_API_KEY"
 5. Build and run the project
 
 
-## Acknowledgments 👏
-
-- [TMDB](https://www.themoviedb.org/) for providing the movie data API
-- Material Design for the UI components
-- All the awesome library authors
-
-
 Project Link: [https://github.com/cevizenes/MoviesApp](https://github.com/cevizenes/MoviesApp) 
